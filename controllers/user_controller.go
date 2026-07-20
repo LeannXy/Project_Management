@@ -55,5 +55,20 @@ func (c *UserController) Login(ctx fiber.Ctx) error {
 		"access_token": token,
 		"refresh_token": refreshToken,
 		"user": userResp,
+
 	})
+}
+
+func (c *UserController) GetUser(ctx fiber.Ctx) error {
+	id := ctx.Params("id")
+	user, err := c.service.GetByPublicID(id)
+	if err != nil {
+		return utils.NotFound(ctx, "Data not found", err.Error())
+	}
+	var userResp models.UserRespons
+	err = copier.Copy(&userResp, &user)
+	if err !=nil {
+		return utils.BadRequest(ctx, "Internal Server Error", err.Error())
+	}
+	return utils.Success(ctx, "Data berhasil ditemukan", userResp)
 }

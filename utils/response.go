@@ -10,7 +10,7 @@ type Response struct {
 	Error         string      `json:"eror,omitempty"`
 }
 
-func Success(c fiber.Ctx, message string, data interface{}) error {
+func Success(c fiber.Ctx, message string, data interface{} ) error {
 	return c.Status(fiber.StatusOK).JSON(Response{
 		Status: "Success",
 		ResponseCode: fiber.StatusOK,
