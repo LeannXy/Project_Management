@@ -22,5 +22,7 @@ func Setup(app *fiber.App,uc *controllers.UserController) {
 	api := app.Group("/api/v1", middleware.AuthMiddleware)
 
 	userGroup := api.Group("/users")
+	userGroup.Get("/page", uc.GetUserPagination)// http://127.0.0.1:3030/api/v1/users/page?filter=&sort=-id&page=1&limit=20
 	userGroup.Get("/:id", uc.GetUser)// /api/v1/users/:id
+	
 }

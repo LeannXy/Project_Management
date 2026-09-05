@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"math"
+	"strconv"
 
 	"github.com/LeannXy/Project_Management/models"
 	"github.com/LeannXy/Project_Management/services"
@@ -20,24 +22,24 @@ func NewUserController(s services.UserService) *UserController {
 func (c *UserController) Register(ctx fiber.Ctx) error {
 	user := new(models.User)
 
-	if err := ctx.Bind().Body(user); err != nil{
+	if err := ctx.Bind().Body(user); err != nil {
 		return utils.BadRequest(ctx, "Gagal Parsing Data", err.Error())
 	}
 
 	if err := c.service.Register(user); err != nil {
-		return  utils.BadRequest(ctx, "Registrasi gagal", err.Error())
+		return utils.BadRequest(ctx, "Registrasi gagal", err.Error())
 	}
 	var userResp models.UserRespons
 	_ = copier.Copy(&userResp, &user)
-	return  utils.Success(ctx, "Register success", userResp)
+	return utils.Success(ctx, "Register success", userResp)
 }
 
 func (c *UserController) Login(ctx fiber.Ctx) error {
-	var body struct{
-		Email string `json:"email"`
+	var body struct {
+		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	if err := ctx.Bind().Body(&body);err != nil {
+	if err := ctx.Bind().Body(&body); err != nil {
 		return utils.BadRequest(ctx, "invalid request", err.Error())
 	}
 
@@ -45,17 +47,15 @@ func (c *UserController) Login(ctx fiber.Ctx) error {
 	if err != nil {
 		return utils.Unauthorized(ctx, "Login Failed", err.Error())
 
-		
 	}
 	token, _ := utils.GenerateToken(user.InternalID, user.Role, user.Email, user.PublicID)
 	refreshToken, _ := utils.GenerateRefreshToken(user.InternalID)
-		var userResp models.UserRespons
+	var userResp models.UserRespons
 	_ = copier.Copy(&userResp, &user)
 	return utils.Success(ctx, "Login Succesful", fiber.Map{
-		"access_token": token,
+		"access_token":  token,
 		"refresh_token": refreshToken,
-		"user": userResp,
-
+		"user":          userResp,
 	})
 }
 
@@ -67,8 +67,40 @@ func (c *UserController) GetUser(ctx fiber.Ctx) error {
 	}
 	var userResp models.UserRespons
 	err = copier.Copy(&userResp, &user)
-	if err !=nil {
+	if err != nil {
 		return utils.BadRequest(ctx, "Internal Server Error", err.Error())
 	}
 	return utils.Success(ctx, "Data berhasil ditemukan", userResp)
+}
+
+func (c *UserController) GetUserPagination(ctx fiber.Ctx) error {
+	page, _ := strconv.Atoi(ctx.Query("page", "1"))
+	limit, _ := strconv.Atoi(ctx.Query("limit", "10"))
+	offset := (page - 1) * limit
+
+	filter := ctx.Query("filter", "")
+	sort := ctx.Query("sort", "")
+
+	users, total, err := c.service.GetAllPagination(filter, sort, limit, offset)
+	if err != nil {
+		return utils.BadRequest(ctx, "Gagal Mengambil Data", err.Error())
+	}
+
+	var userResp []models.UserRespons
+	_ = copier.Copy(&userResp, &users)
+
+	meta := utils.PaginationMeta{
+		Page:      page,
+		Limit:     limit,
+		Total:     int(total),
+		TotalPage: int(math.Ceil(float64(total) / float64(limit))),
+		Filter:    filter,
+		Sort:      sort,
+	}
+
+	if total == 0 {
+		return utils.NotFoundPagination(ctx, "Data pengguna tidak ditemukan", userResp, meta)
+	}
+
+	return utils.SuccessPagination(ctx, "Data ditemukan", userResp, meta)
 }
