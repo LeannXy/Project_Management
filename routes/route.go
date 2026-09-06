@@ -25,5 +25,6 @@ func Setup(app *fiber.App,uc *controllers.UserController) {
 	userGroup.Get("/page", uc.GetUserPagination)// http://127.0.0.1:3030/api/v1/users/page?filter=&sort=-id&page=1&limit=20
 	userGroup.Get("/:id", uc.GetUser)// /api/v1/users/:id
 	userGroup.Put("/:id", uc.UpdateUser)// /api/v1/users/:id
+	userGroup.Delete("/:id", uc.DeleteUser)// /api/v1/users/:id
 	
 }
