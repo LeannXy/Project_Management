@@ -26,6 +26,7 @@ func AuthMiddleware(c fiber.Ctx) error {
 	if err != nil || !token.Valid {
 		return utils.Unauthorized(c, "Unauthorized", "Invalid token")
 	}
+	c.Locals("user", token)
 
 	return c.Next()
 }

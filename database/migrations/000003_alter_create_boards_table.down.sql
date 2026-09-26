@@ -1,0 +1,2 @@
+ALTER TABLE boards
+DROP COLUMNIF EXIST due_date;
