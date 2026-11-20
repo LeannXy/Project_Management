@@ -80,3 +80,15 @@ func (c *BoardController) AddBoardMembers(ctx fiber.Ctx) error{
 	}
 	return utils.Success(ctx, "Members berhasil ditambahkan", nil)
 }
+func (c *BoardController) RemoveBoardMembers(ctx fiber.Ctx) error{
+	publicID := ctx.Params("id")
+
+	var userIDs []string
+	if err := ctx.Bind().Body(&userIDs); err != nil{
+		return utils.BadRequest(ctx, "Gagal Parshing Data", err.Error())
+	}
+	if err := c.service.AddMember(publicID, userIDs); err != nil{
+		return utils.BadRequest(ctx, "Gagal Menghapus Member", err.Error())
+	}
+	return utils.Success(ctx, "Members berhasil dihapus", nil)
+}

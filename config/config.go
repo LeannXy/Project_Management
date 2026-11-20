@@ -77,6 +77,6 @@ func ConnectDB()  {
 	sql.SetMaxOpenConns(100)
 	sql.SetConnMaxLifetime(time.Hour)
 
-	DB =db
+	DB = db
 
 }
